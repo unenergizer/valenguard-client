@@ -1,9 +1,4 @@
-package com.valenguard.client;
-
-import android.os.Bundle;
-
-import com.badlogic.gdx.backends.android.AndroidApplication;
-import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+package com.valenguard.client.assets;
 
 /********************************************************
  * Valenguard MMO Client and Valenguard MMO Server Info
@@ -12,7 +7,7 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
  * Created by Robert A Brown & Joseph Rugh
  *
  * Project Title: valenguard-client
- * Original File Date: 12/20/2017 @ 12:14 AM
+ * Original File Date: 12/20/2017 @ 12:10 AM
  * ______________________________________________________
  *
  * Copyright © 2017 Valenguard.com. All Rights Reserved.
@@ -25,11 +20,7 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
  * permission of the owner.
  *******************************************************/
 
-public class AndroidLauncher extends AndroidApplication {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-        initialize(Valenguard.getInstance(), config);
-    }
+public class Maps {
+
+    public final String TEST_MAP = "maps/maintown.tmx";
 }

@@ -1,9 +1,6 @@
-package com.valenguard.client;
+package com.valenguard.client.screens;
 
-import android.os.Bundle;
-
-import com.badlogic.gdx.backends.android.AndroidApplication;
-import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+import com.badlogic.gdx.Screen;
 
 /********************************************************
  * Valenguard MMO Client and Valenguard MMO Server Info
@@ -12,7 +9,7 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
  * Created by Robert A Brown & Joseph Rugh
  *
  * Project Title: valenguard-client
- * Original File Date: 12/20/2017 @ 12:14 AM
+ * Original File Date: 12/20/2017 @ 12:10 AM
  * ______________________________________________________
  *
  * Copyright © 2017 Valenguard.com. All Rights Reserved.
@@ -25,11 +22,19 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
  * permission of the owner.
  *******************************************************/
 
-public class AndroidLauncher extends AndroidApplication {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-        initialize(Valenguard.getInstance(), config);
+public enum ScreenType {
+
+    LOADING(new LoadingScreen()),
+    LOGIN(new LoginScreen()),
+    GAME(new GameScreen());
+
+    private Screen screen;
+
+    ScreenType(Screen screen) {
+        this.screen = screen;
+    }
+
+    public Screen getScreen() {
+        return screen;
     }
 }

@@ -1,83 +1,113 @@
 package com.valenguard.client;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.valenguard.client.entities.Entity;
+import com.valenguard.client.network.listeners.Ponger;
+import com.valenguard.client.network.listeners.incoming.MoveReply;
+import com.valenguard.client.network.listeners.outgoing.MoveRequest;
+import com.valenguard.client.screens.ScreenType;
 import com.valenguard.client.network.Client;
 import com.valenguard.client.network.ClientEventBus;
-import com.valenguard.client.util.AttachableCamera;
+import com.valenguard.client.util.ConsoleLogger;
 import com.valenguard.client.util.Consumer;
-import com.valenguard.client.util.Controller;
 
-/**
- * Created by unene on 12/20/2017.
- */
+import lombok.Getter;
+import lombok.Setter;
 
-public class Valenguard extends ApplicationAdapter {
-    SpriteBatch batch;
-    Texture img;
+/********************************************************
+ * Valenguard MMO Client and Valenguard MMO Server Info
+ *
+ * Owned by Robert A Brown & Joseph Rugh
+ * Created by Robert A Brown & Joseph Rugh
+ *
+ * Project Title: valenguard-client
+ * Original File Date: 12/20/2017 @ 12:10 AM
+ * ______________________________________________________
+ *
+ * Copyright © 2017 Valenguard.com. All Rights Reserved.
+ *
+ * No part of this project and/or code and/or source code
+ * and/or source may be reproduced, distributed, or
+ * transmitted in any form or by any means, including
+ * photocopying, recording, or other electronic or
+ * mechanical methods, without the prior written
+ * permission of the owner.
+ *******************************************************/
 
-    private Entity player;
-    private AttachableCamera camera;
+@Getter
+public class Valenguard extends Game {
 
-    // TODO: MOVE TO GAME SCREEN
-    private TiledMap map;
-    private OrthogonalTiledMapRenderer mapRenderer;
+    private static Valenguard valenguard;
+    private AssetManager assetManager;
+    private SpriteBatch spriteBatch;
+    private Client client;
+    private Screen screen;
+    private ScreenType screenType;
+    @Setter
+    private Texture loginBackground;
+    @Setter
+    private volatile boolean canUseLoginButton = true;
+    @Setter
+    private volatile boolean connectedToServer = false;
 
-    @Override
-    public void create() {
-        batch = new SpriteBatch();
-        img = new Texture("link.png");
+    protected Valenguard() {}
 
-        Client client = new Client();
-        final Valenguard val = this;
-        client.connect("localhost", (short) 3407, new Consumer<ClientEventBus>() {
-            @Override
-            public void accept(ClientEventBus clientEventBus) {
-
-            }
-        });
-
-        camera = new AttachableCamera(Settings.SCREEN_WIDTH, Settings.SCREEN_HEIGHT);
-        player = new Entity(0, 0);
-        camera.attachEntity(player);
-
-        // TODO: MOVE TO GAME SCREEN
-        map = new TmxMapLoader().load("maps/maintown.tmx");
-        mapRenderer = new OrthogonalTiledMapRenderer(map);
-
-        Controller inputProcessor = new Controller(player);
-        Gdx.input.setInputProcessor(inputProcessor);
+    public static Valenguard getInstance() {
+        if (valenguard == null) valenguard = new Valenguard();
+        return valenguard;
     }
 
     @Override
-    public void render() {
-        Gdx.gl.glClearColor(1, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+    public void create() {
+        System.out.println(ConsoleLogger.INFO + "Starting game...");
+        assetManager = new AssetManager();
+        spriteBatch = new SpriteBatch();
+        client = new Client();
+        setScreen(ScreenType.LOADING.getScreen());
+    }
 
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
+    /**
+     * Displays the screen that will be shown to the player.
+     * @param screenType The type of screen we want to display.
+     */
+    public void setScreen(ScreenType screenType) {
+        // Set reference for later
+        screen = screenType.getScreen();
+        this.screenType = screenType;
 
-        // TODO: MOVE TO GAME SCREEN
-        mapRenderer.setView(camera);
-        mapRenderer.render();
-
-        batch.begin();
-        player.draw(batch, img);
-        //batch.draw(new Texture("badlogic.jpg"), 50, 50);
-        batch.end();
-
+        // Set screen with LibGDX
+        setScreen(screen);
     }
 
     @Override
     public void dispose() {
-        batch.dispose();
-        img.dispose();
+        System.out.println(ConsoleLogger.INFO + "Closing game...");
+        System.out.println(ConsoleLogger.INFO.toString() + "Disposing: Valenguard Game");
+
+        assetManager.dispose();
+        spriteBatch.dispose();
+        screen.dispose();
+        loginBackground.dispose();
+    }
+
+    /**
+     * Initialize connection to the game server.
+     */
+    public void initializeNetwork() {
+        canUseLoginButton = false;
+        client.openConnection(
+                ServerConstants.SERVER_ADDRESS,
+                (short) ServerConstants.SERVER_PORT,
+                new Consumer<ClientEventBus>() {
+                    @Override
+                    public void accept(ClientEventBus clientEventBus) {
+                        clientEventBus.registerListener(new Ponger());
+                        clientEventBus.registerListener(new MoveReply());
+                        clientEventBus.registerListener(new MoveRequest());
+                    }
+                });
     }
 }

@@ -1,9 +1,8 @@
-package com.valenguard.client;
+package com.valenguard.client.util;
 
-import android.os.Bundle;
-
-import com.badlogic.gdx.backends.android.AndroidApplication;
-import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 
 /********************************************************
  * Valenguard MMO Client and Valenguard MMO Server Info
@@ -12,7 +11,7 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
  * Created by Robert A Brown & Joseph Rugh
  *
  * Project Title: valenguard-client
- * Original File Date: 12/20/2017 @ 12:14 AM
+ * Original File Date: 12/20/2017 @ 12:10 AM
  * ______________________________________________________
  *
  * Copyright © 2017 Valenguard.com. All Rights Reserved.
@@ -25,11 +24,17 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
  * permission of the owner.
  *******************************************************/
 
-public class AndroidLauncher extends AndroidApplication {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-        initialize(Valenguard.getInstance(), config);
+public class GraphicsUtils {
+
+    private GraphicsUtils() {
+    }
+
+    public static void clearScreen() {
+        clearScreen(Color.BLACK);
+    }
+
+    public static void clearScreen(Color color) {
+        Gdx.gl.glClearColor(color.r, color.g, color.b, color.a);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     }
 }
