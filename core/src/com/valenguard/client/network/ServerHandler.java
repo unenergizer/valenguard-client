@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /********************************************************
- * Valenguard MMO Client and Valenguard MMO Server Info
+ * Valenguard MMO ClientConnection and Valenguard MMO Server Info
  *
  * Owned by Robert A Brown & Joseph Rugh
  * Created by Robert A Brown & Joseph Rugh
@@ -33,9 +33,9 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class ServerHandle {
+public class ServerHandler {
 
-    private Client client;
+    private ClientConnection client;
     private Socket socket;
     private ObjectInputStream inputStream;
     private ObjectOutputStream outputStream;
@@ -69,9 +69,18 @@ public class ServerHandle {
         return null;
     }
 
-    public void write(final char opcode, Write writeCallback) {
+    public int readInt() {
         try {
-            outputStream.writeChar(opcode);
+            return inputStream.readInt();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public void write(final byte opcode, Write writeCallback) {
+        try {
+            outputStream.writeByte(opcode);
             writeCallback.accept(outputStream);
             outputStream.flush();
         } catch (IOException e) {

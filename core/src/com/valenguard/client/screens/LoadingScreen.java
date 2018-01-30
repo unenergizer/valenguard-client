@@ -2,18 +2,17 @@ package com.valenguard.client.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
-import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.valenguard.client.Valenguard;
-import com.valenguard.client.assets.Assets;
-import com.valenguard.client.util.ConsoleLogger;
+import com.valenguard.client.assets.FileManager;
+import com.valenguard.client.assets.GameMusic;
+import com.valenguard.client.assets.GameTexture;
 import com.valenguard.client.util.GraphicsUtils;
 
 /********************************************************
- * Valenguard MMO Client and Valenguard MMO Server Info
+ * Valenguard MMO ClientConnection and Valenguard MMO Server Info
  *
  * Owned by Robert A Brown & Joseph Rugh
  * Created by Robert A Brown & Joseph Rugh
@@ -34,25 +33,23 @@ import com.valenguard.client.util.GraphicsUtils;
 
 public class LoadingScreen extends ScreenAdapter {
 
-    private AssetManager assetManager;
-    private SpriteBatch batch;
+    private static final String TAG = LoginScreen.class.getSimpleName();
+    
+    private FileManager fileManager;
+    private SpriteBatch spriteBatch;
     private Stage stage;
     private int currentStage = 0;
 
     @Override
     public void show() {
-        System.out.println(ConsoleLogger.INFO.toString() + "Showing the loading screen.");
+        Gdx.app.debug(TAG, "Showing the loading screen.");
 
-        batch = Valenguard.getInstance().getSpriteBatch();
-        assetManager = Valenguard.getInstance().getAssetManager();
+        spriteBatch = new SpriteBatch();
+        fileManager = Valenguard.getInstance().getFileManager();
         stage = new Stage(new ScreenViewport());
 
         // begin loading quick graphics (for loading screen)
-        assetManager.load(Assets.graphics.LOGIN_BACKGROUND, Texture.class);
-        assetManager.finishLoading();
-
-        // initialize loading screen graphics
-        Valenguard.getInstance().setLoginBackground((Texture) assetManager.get(Assets.graphics.LOGIN_BACKGROUND));
+        fileManager.loadTexture(GameTexture.LOGIN_BACKGROUND);
     }
 
     @Override
@@ -60,9 +57,9 @@ public class LoadingScreen extends ScreenAdapter {
         GraphicsUtils.clearScreen();
 
         // draw background
-        batch.begin();
-        batch.draw(Valenguard.getInstance().getLoginBackground(), 0, 0, stage.getWidth(), stage.getHeight());
-        batch.end();
+        spriteBatch.begin();
+        spriteBatch.draw(fileManager.getTexture(GameTexture.LOGIN_BACKGROUND), 0, 0, stage.getWidth(), stage.getHeight());
+        spriteBatch.end();
 
         // display loading bar here
         stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
@@ -70,7 +67,7 @@ public class LoadingScreen extends ScreenAdapter {
 
         // Currently loading assets have finished. Either must switch
         // screens and/or start loading in new assets
-        if (assetManager.update()) {
+        if (fileManager.updateAssetLoading()) {
             switch (currentStage) {
                 case 0:
                     loadAllGraphics();
@@ -79,8 +76,6 @@ public class LoadingScreen extends ScreenAdapter {
                     loadAllAudio();
                     break;
                 case 2:
-                    // Looks like were all finished!
-                    assetManager.finishLoading();
                     // After going through all asset types switch screens
                     Valenguard.getInstance().setScreen(ScreenType.LOGIN);
 
@@ -90,7 +85,7 @@ public class LoadingScreen extends ScreenAdapter {
         }
 
         // Current progress of the currently loading asserts
-        float currentProgress = assetManager.getProgress();
+        float currentProgress = fileManager.loadCompleted();
 
         // Use the progress to update the progress bar respectively
 
@@ -101,11 +96,12 @@ public class LoadingScreen extends ScreenAdapter {
         //assetManager.load(Assets.graphics.LOGIN_BACKGROUND, TextureComponent.class);
 
         // ENTITIES
-        assetManager.load(Assets.graphics.TEMP_PLAYER_IMG, Texture.class);
+        fileManager.loadTexture(GameTexture.TEMP_PLAYER_IMG);
+        fileManager.loadTexture(GameTexture.TEMP_OTHER_PLAYER_IMG);
     }
 
     private void loadAllAudio() {
-        // TODO: LOAD AUDIO
+        fileManager.loadMusic(GameMusic.LOGIN_SCREEN_THEME);
     }
 
     @Override
@@ -115,8 +111,9 @@ public class LoadingScreen extends ScreenAdapter {
 
     @Override
     public void dispose() {
-        System.out.println(ConsoleLogger.INFO.toString() + "Disposing: LoadingScreen");
+        Gdx.app.debug(TAG, "Disposing: LoadingScreen");
 
         stage.dispose();
+        spriteBatch.dispose();
     }
 }

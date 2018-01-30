@@ -5,22 +5,28 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.valenguard.client.ClientConstants;
 import com.valenguard.client.Valenguard;
-import com.valenguard.client.assets.Assets;
+import com.valenguard.client.assets.FileManager;
+import com.valenguard.client.assets.GameMap;
+import com.valenguard.client.assets.GameTexture;
+import com.valenguard.client.constants.ClientConstants;
 import com.valenguard.client.entities.Entity;
 import com.valenguard.client.util.AttachableCamera;
-import com.valenguard.client.util.ConsoleLogger;
 import com.valenguard.client.util.Controller;
 import com.valenguard.client.util.GraphicsUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import lombok.Getter;
+import lombok.Setter;
 
 /********************************************************
- * Valenguard MMO Client and Valenguard MMO Server Info
+ * Valenguard MMO ClientConnection and Valenguard MMO Server Info
  *
  * Owned by Robert A Brown & Joseph Rugh
  * Created by Robert A Brown & Joseph Rugh
@@ -41,36 +47,43 @@ import lombok.Getter;
 
 public class GameScreen implements Screen {
 
-    private SpriteBatch batch;
+    private static final String TAG = GameScreen.class.getSimpleName();
+
+    @Getter
+    @Setter
+    private Queue<Entity> entityList = new ConcurrentLinkedQueue<Entity>();
+
+    private FileManager fileManager;
+    private SpriteBatch spriteBatch;
     private Texture playerTexture;
     @Getter
-    private Entity player;
     private AttachableCamera camera;
     private ScreenViewport screenViewport;
-    private TiledMap map;
+    private TiledMap tiledMap;
     private OrthogonalTiledMapRenderer mapRenderer;
 
     @Override
     public void show() {
-        System.out.println(ConsoleLogger.INFO.toString() + "Showing the game screen.");
+        Gdx.app.debug(TAG, "Showing the game screen.");
 
-        batch = Valenguard.getInstance().getSpriteBatch();
+        spriteBatch = new SpriteBatch();
+        fileManager = Valenguard.getInstance().getFileManager();
 
         // Setup player
-        playerTexture = new Texture(Assets.graphics.TEMP_PLAYER_IMG);
-        player = new Entity(0, 0);
+        playerTexture = fileManager.getTexture(GameTexture.TEMP_PLAYER_IMG);
 
         // Setup camera
         camera = new AttachableCamera(ClientConstants.SCREEN_WIDTH, ClientConstants.SCREEN_HEIGHT, ClientConstants.ZOOM);
         screenViewport = new ScreenViewport();
-        camera.attachEntity(player);
+        camera.attachEntity(Valenguard.getInstance().getPlayerClient());
 
         // Setup Map
-        map = new TmxMapLoader().load(Assets.maps.TEST_MAP);
-        mapRenderer = new OrthogonalTiledMapRenderer(map);
+        fileManager.loadTiledMap(GameMap.TEST_MAP);
+        tiledMap = fileManager.getTiledMap(GameMap.TEST_MAP);
+        mapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
 
         // Setup input controls
-        Controller inputProcessor = new Controller(player);
+        Controller inputProcessor = new Controller(Valenguard.getInstance().getPlayerClient());
         Gdx.input.setInputProcessor(inputProcessor);
     }
 
@@ -79,18 +92,28 @@ public class GameScreen implements Screen {
         GraphicsUtils.clearScreen();
 
         // Update camera
-        camera.clampCamera(screenViewport, map);
+        camera.clampCamera(screenViewport, tiledMap);
         camera.update();
 
-        // Render map
+        // Render tiledMap
         mapRenderer.setView(camera);
         mapRenderer.render();
 
         // Draw sprites
-        batch.setProjectionMatrix(camera.combined);
-        batch.begin();
-        player.draw(batch, playerTexture);
-        batch.end();
+        spriteBatch.setProjectionMatrix(camera.combined);
+        spriteBatch.begin();
+
+        // Draw all other entities
+        if (!entityList.isEmpty()) {
+            for (Entity entity : entityList) {
+                entity.draw(spriteBatch, fileManager.getTexture(GameTexture.TEMP_OTHER_PLAYER_IMG));
+            }
+        }
+
+        // Draw our main player
+        Valenguard.getInstance().getPlayerClient().draw(spriteBatch, playerTexture);
+
+        spriteBatch.end();
     }
 
     @Override
@@ -103,6 +126,7 @@ public class GameScreen implements Screen {
     public void pause() {
 
     }
+
     @Override
     public void resume() {
 
@@ -115,11 +139,10 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        System.out.println(ConsoleLogger.INFO.toString() + "Disposing: GameScreen");
+        Gdx.app.debug(TAG, "Disposing: GameScreen");
 
         // Dispose of system resources
-        playerTexture.dispose();
-        map.dispose();
-        mapRenderer.dispose();
+        if (mapRenderer != null) mapRenderer.dispose();
+        if (spriteBatch != null) spriteBatch.dispose();
     }
 }

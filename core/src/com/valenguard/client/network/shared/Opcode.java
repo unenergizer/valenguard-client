@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /********************************************************
- * Valenguard MMO Client and Valenguard MMO Server Info
+ * Valenguard MMO ClientConnection and Valenguard MMO Server Info
  *
  * Owned by Robert A Brown & Joseph Rugh
  * Created by Robert A Brown & Joseph Rugh
@@ -28,6 +28,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Opcode {
-    char getOpcode();
+    byte getOpcode();
 }
 

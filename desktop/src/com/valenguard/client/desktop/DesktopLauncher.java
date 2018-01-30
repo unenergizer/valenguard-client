@@ -1,9 +1,10 @@
 package com.valenguard.client.desktop;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Files;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.valenguard.client.ClientConstants;
+import com.valenguard.client.constants.ClientConstants;
 import com.valenguard.client.Valenguard;
 
 /********************************************************
@@ -35,6 +36,7 @@ public class DesktopLauncher {
 		config.addIcon("icon-128.png", Files.FileType.Internal);
 		config.addIcon("icon-32.png", Files.FileType.Internal);
 		config.addIcon("icon-16.png", Files.FileType.Internal);
-		new LwjglApplication(Valenguard.getInstance(), config);
+		Application application = new LwjglApplication(Valenguard.getInstance(), config);
+		application.setLogLevel(Application.LOG_DEBUG);
 	}
 }

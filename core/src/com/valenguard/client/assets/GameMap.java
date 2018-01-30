@@ -1,4 +1,4 @@
-package com.valenguard.client;
+package com.valenguard.client.assets;
 
 /********************************************************
  * Valenguard MMO Client and Valenguard MMO Server Info
@@ -20,12 +20,17 @@ package com.valenguard.client;
  * permission of the owner.
  *******************************************************/
 
-public class ClientConstants {
-    public static final String GAME_VERSION = "0.1.0";
-    public static final int SCREEN_WIDTH = 1024;
-    public static final int SCREEN_HEIGHT = SCREEN_WIDTH / 16 * 9;
-    public static final float ZOOM = 0.5f;
-    public static final String WEB_REGISTER = "http://valenguard.com/login/login";
-    public static final String WEB_FORUM = "http://valenguard.com/forum";
-    public static final String WEB_HOME = "http://valenguard.com/";
+public enum GameMap {
+
+    TEST_MAP("maintown.tmx");
+
+    private String filePath;
+
+    GameMap(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public String getFilePath() {
+        return "maps/" + filePath;
+    }
 }

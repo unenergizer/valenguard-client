@@ -1,20 +1,20 @@
 package com.valenguard.client.network;
 
 
+import com.badlogic.gdx.Gdx;
+import com.valenguard.client.network.shared.Listener;
+import com.valenguard.client.network.shared.Opcode;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-
-import com.valenguard.client.network.shared.Listener;
-import com.valenguard.client.network.shared.Opcode;
-
 import lombok.AllArgsConstructor;
 
 /********************************************************
- * Valenguard MMO Client and Valenguard MMO Server Info
+ * Valenguard MMO ClientConnection and Valenguard MMO Server Info
  *
  * Owned by Robert A Brown & Joseph Rugh
  * Created by Robert A Brown & Joseph Rugh
@@ -34,8 +34,9 @@ import lombok.AllArgsConstructor;
  *******************************************************/
 
 public class ClientEventBus {
+    private static final String TAG = ClientEventBus.class.getSimpleName();
 
-    private final Map<Character, CallbackData> listeners = new HashMap<Character, CallbackData>();
+    private final Map<Byte, CallbackData> listeners = new HashMap<Byte, CallbackData>();
 
     @AllArgsConstructor
     private class CallbackData {
@@ -51,24 +52,24 @@ public class ClientEventBus {
                 String error = "Listener: " + listener;
                 if (params.length != 1)
                     throw new RuntimeException(error + " must have 1 parameter.");
-                if (!params[0].equals(ServerHandle.class))
+                if (!params[0].equals(ServerHandler.class))
                     throw new RuntimeException(error + " first parameter must be of type ServerHandle.");
                 listeners.put(((Opcode) opcodeAnno).getOpcode(), new CallbackData(listener, method));
             }
         }
     }
 
-    public void publish(char opcode, ServerHandle serverHandle) {
+    public void publish(byte opcode, ServerHandler serverHandler) {
         CallbackData callbackData = listeners.get(opcode);
         if (callbackData == null) {
-            System.out.println("Callback data was null for " + opcode);
+            Gdx.app.debug(TAG, "Callback data was null for " + opcode);
             return;
         }
         try {
-            callbackData.method.invoke(callbackData.listener, serverHandle);
+            callbackData.method.invoke(callbackData.listener, serverHandler);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
-        } catch ( IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();

@@ -5,6 +5,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.valenguard.client.constants.ClientConstants;
 import com.valenguard.client.entities.Entity;
 
 /********************************************************
@@ -48,7 +49,7 @@ public class AttachableCamera extends OrthographicCamera {
         float cameraMaxX = layer.getWidth() * layer.getTileWidth() - cameraMinX;
         float cameraMaxY = layer.getHeight() * layer.getTileHeight() - cameraMinY;
 
-        position.x = MathUtils.clamp(following.getX(), cameraMinX, cameraMaxX);
-        position.y = MathUtils.clamp(following.getY(), cameraMinY, cameraMaxY);
+        position.x = MathUtils.clamp(following.getX() * ClientConstants.TILE_SIZE, cameraMinX, cameraMaxX);
+        position.y = MathUtils.clamp(following.getY() * ClientConstants.TILE_SIZE, cameraMinY, cameraMaxY);
     }
 }

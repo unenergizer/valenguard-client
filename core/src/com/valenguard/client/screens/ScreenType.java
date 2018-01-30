@@ -1,9 +1,7 @@
 package com.valenguard.client.screens;
 
-import com.badlogic.gdx.Screen;
-
 /********************************************************
- * Valenguard MMO Client and Valenguard MMO Server Info
+ * Valenguard MMO ClientConnection and Valenguard MMO Server Info
  *
  * Owned by Robert A Brown & Joseph Rugh
  * Created by Robert A Brown & Joseph Rugh
@@ -23,18 +21,7 @@ import com.badlogic.gdx.Screen;
  *******************************************************/
 
 public enum ScreenType {
-
-    LOADING(new LoadingScreen()),
-    LOGIN(new LoginScreen()),
-    GAME(new GameScreen());
-
-    private Screen screen;
-
-    ScreenType(Screen screen) {
-        this.screen = screen;
-    }
-
-    public Screen getScreen() {
-        return screen;
-    }
+    LOADING,
+    LOGIN,
+    GAME
 }

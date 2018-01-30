@@ -1,8 +1,7 @@
-package com.valenguard.client.network.listeners;
+package com.valenguard.client.network.listeners.client.outgoing;
 
-import com.valenguard.client.network.ServerHandle;
-import com.valenguard.client.network.shared.Listener;
-import com.valenguard.client.network.shared.Opcode;
+import com.badlogic.gdx.Gdx;
+import com.valenguard.client.constants.Direction;
 import com.valenguard.client.network.shared.Opcodes;
 import com.valenguard.client.network.shared.Write;
 
@@ -10,7 +9,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 
 /********************************************************
- * Valenguard MMO Client and Valenguard MMO Server Info
+ * Valenguard MMO ClientConnection and Valenguard MMO Server Info
  *
  * Owned by Robert A Brown & Joseph Rugh
  * Created by Robert A Brown & Joseph Rugh
@@ -29,16 +28,24 @@ import java.io.ObjectOutputStream;
  * permission of the owner.
  *******************************************************/
 
-public class Ponger implements Listener {
+public class MoveRequest extends ClientOutPacket {
 
-    @Opcode(getOpcode = Opcodes.PING_PONG)
-    public void onPing(ServerHandle serverHandle) {
-           //System.out.println(serverHandle.readString());
-           serverHandle.write(Opcodes.PING_PONG, new Write() {
-               @Override
-               public void accept(ObjectOutputStream outStream) throws IOException {
-                   outStream.writeUTF("Pong");
-               }
-           });
+    private static final String TAG = MoveRequest.class.getSimpleName();
+
+    private Direction direction;
+
+    public MoveRequest(Direction direction) {
+        this.direction = direction;
+    }
+
+    @Override
+    public void sendPacket() {
+        serverHandler.write(Opcodes.MOVE_REQUEST, new Write() {
+            @Override
+            public void accept(ObjectOutputStream outStream) throws IOException {
+                //Gdx.app.debug(TAG, "MoveRequest: " + direction.toString() + " = " + direction.getDirection());
+                outStream.writeByte(direction.getDirection());
+            }
+        });
     }
 }

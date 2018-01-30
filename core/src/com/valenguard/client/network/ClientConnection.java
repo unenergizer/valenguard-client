@@ -3,11 +3,8 @@ package com.valenguard.client.network;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.valenguard.client.Valenguard;
-import com.valenguard.client.network.shared.Opcodes;
-import com.valenguard.client.network.shared.Write;
 import com.valenguard.client.screens.LoginScreen;
 import com.valenguard.client.screens.ScreenType;
-import com.valenguard.client.util.ConsoleLogger;
 import com.valenguard.client.util.Consumer;
 
 import java.io.IOException;
@@ -21,7 +18,7 @@ import java.net.SocketException;
 import lombok.Getter;
 
 /********************************************************
- * Valenguard MMO Client and Valenguard MMO Server Info
+ * Valenguard MMO ClientConnection and Valenguard MMO Server Info
  *
  * Owned by Robert A Brown & Joseph Rugh
  * Created by Robert A Brown & Joseph Rugh
@@ -40,16 +37,19 @@ import lombok.Getter;
  * permission of the owner.
  *******************************************************/
 
-public class Client {
+public class ClientConnection {
 
-    private final int SECONDS_TO_TIMEOUT = 5;
     @Getter
-    private ServerHandle serverHandle;
+    private static final String TAG = ClientConnection.class.getSimpleName();
+    
+    private final int SECONDS_TO_TIMEOUT = 10;
+    @Getter
+    private ServerHandler serverHandler;
     private final ClientEventBus eventBus = new ClientEventBus();
 
 
     public void openConnection(final String address, final short port, final Consumer<ClientEventBus> registerListeners) {
-        System.out.println(ConsoleLogger.NETWORK + "Attempting network connection...");
+        Gdx.app.debug(TAG,"Attempting network connection...");
         safeInfoMessage("Attempting network connection...", Color.YELLOW);
 
         new Thread(new Runnable() {
@@ -66,7 +66,7 @@ public class Client {
 
                     // Failed to openConnection
                     if (e instanceof ConnectException) {
-                        System.out.println(ConsoleLogger.NETWORK + "Failed to openConnection to server!");
+                        Gdx.app.debug(TAG,"Failed to openConnection to server!");
                         safeInfoMessage("Failed to connect!", Color.RED);
 
                         // Allow client to use login button again.
@@ -78,29 +78,13 @@ public class Client {
                     }
                 }
 
-                // Network connection was successful.
-                System.out.println(ConsoleLogger.NETWORK + "Connection successful! Switching to the Game screen.");
-                safeInfoMessage("Connected!", Color.GREEN);
-
-                // Run the following code in a LibGDX thread.
-                // Now switch to the game screen!
-                safeChangeScreen(ScreenType.GAME);
-
                 // Update valenguard main instance that a connection has been made.
                 Valenguard.getInstance().setConnectedToServer(true);
-
 
                 registerListeners.accept(eventBus);
 
                 receivePackets(socket);
 
-//                // Sending an initial pong to the server
-//                send(Opcodes.PING_PONG, new Write() {
-//                    @Override
-//                    public void accept(ObjectOutputStream outStream) throws IOException {
-//                        outStream.writeUTF("Pong");
-//                    }
-//                });
             }
         }, "Connection").start();
     }
@@ -120,7 +104,7 @@ public class Client {
         }
 
         // Create our server handler
-        serverHandle = new ServerHandle(this, socket, inputStream, outputStream);
+        serverHandler = new ServerHandler(this, socket, inputStream, outputStream);
 
         new Thread(new Runnable() {
             @Override
@@ -128,7 +112,7 @@ public class Client {
                 while (Valenguard.getInstance().isConnectedToServer()) {
                     try {
 
-                        eventBus.publish(serverHandle.getInputStream().readChar(), serverHandle);
+                        eventBus.publish(serverHandler.getInputStream().readByte(), serverHandler);
 
                     } catch (IOException e) {
                         // Socket closed
@@ -147,10 +131,10 @@ public class Client {
      * Safely closes a network connection.
      */
     private void closeConnection() {
-        System.out.println(ConsoleLogger.NETWORK + "Closing network connection.");
+        Gdx.app.debug(TAG,"Closing network connection.");
 
         Valenguard.getInstance().setConnectedToServer(false);
-        serverHandle.closeConnection();
+        serverHandler.closeConnection();
 
         // Change screens if needed.
         if (Valenguard.getInstance().getScreenType() == ScreenType.GAME) {
@@ -173,7 +157,7 @@ public class Client {
      *
      * @param screenType The screen we want to change to.
      */
-    private void safeChangeScreen(final ScreenType screenType) {
+    public void safeChangeScreen(final ScreenType screenType) {
         safeChangeScreen(screenType, "", Color.WHITE);
     }
 
@@ -185,11 +169,6 @@ public class Client {
      * @param color       The color of the message to send.
      */
     private void safeChangeScreen(final ScreenType screenType, final String infoMessage, final Color color) {
-        if (screenType == Valenguard.getInstance().getScreenType()) {
-            System.out.println(ConsoleLogger.ERROR.toString() +
-                    "Trying to change screens, but we are already on requested screen.");
-            return;
-        }
 
         // Run the following code in a LibGDX thread.
         Gdx.app.postRunnable(new Runnable() {
@@ -212,11 +191,10 @@ public class Client {
      * @param infoMessage The message we want to send.
      * @param color       The color of the message we are sending.
      */
-    private void safeInfoMessage(final String infoMessage, final Color color) {
+    public void safeInfoMessage(final String infoMessage, final Color color) {
         // Make sure we only send messages to a proper login screen.
         if (Valenguard.getInstance().getScreenType() != ScreenType.LOGIN) {
-            System.out.println(ConsoleLogger.ERROR.toString() +
-                    "Trying to send a Login Screen info message on a different screen.");
+            Gdx.app.debug(TAG,"Trying to send a Login Screen info message on a different screen.");
             return;
         }
 
@@ -224,8 +202,8 @@ public class Client {
         Gdx.app.postRunnable(new Runnable() {
             @Override
             public void run() {
-                LoginScreen screen = (LoginScreen) Valenguard.getInstance().getScreen();
-                screen.buildStage(infoMessage, color);
+                if (Valenguard.getInstance().getScreenType() != ScreenType.LOGIN) return;
+                Valenguard.getInstance().getLoginScreen().buildStage(infoMessage, color);
             }
         });
     }

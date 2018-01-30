@@ -1,29 +1,34 @@
 package com.valenguard.client;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.valenguard.client.network.listeners.Ponger;
-import com.valenguard.client.network.listeners.incoming.MoveReply;
-import com.valenguard.client.network.listeners.outgoing.MoveRequest;
-import com.valenguard.client.screens.ScreenType;
-import com.valenguard.client.network.Client;
+import com.badlogic.gdx.Gdx;
+import com.valenguard.client.assets.FileManager;
+import com.valenguard.client.constants.ServerConstants;
+import com.valenguard.client.entities.PlayerClient;
+import com.valenguard.client.network.ClientConnection;
 import com.valenguard.client.network.ClientEventBus;
-import com.valenguard.client.util.ConsoleLogger;
+import com.valenguard.client.network.listeners.client.incoming.EntityExitMap;
+import com.valenguard.client.network.listeners.client.incoming.EntityJoinedMap;
+import com.valenguard.client.network.listeners.client.incoming.EntityMoveUpdate;
+import com.valenguard.client.network.listeners.client.incoming.InitializePlayerClient;
+import com.valenguard.client.network.listeners.client.incoming.MoveReply;
+import com.valenguard.client.network.listeners.client.incoming.PlayerMapChange;
+import com.valenguard.client.screens.GameScreen;
+import com.valenguard.client.screens.LoadingScreen;
+import com.valenguard.client.screens.LoginScreen;
+import com.valenguard.client.screens.ScreenType;
 import com.valenguard.client.util.Consumer;
 
 import lombok.Getter;
 import lombok.Setter;
 
 /********************************************************
- * Valenguard MMO Client and Valenguard MMO Server Info
+ * Valenguard MMO ClientConnection and Valenguard MMO Server Info
  *
  * Owned by Robert A Brown & Joseph Rugh
  * Created by Robert A Brown & Joseph Rugh
  *
- * Project Title: valenguard-client
+ * Project Title: valenguard-clientConnection
  * Original File Date: 12/20/2017 @ 12:10 AM
  * ______________________________________________________
  *
@@ -40,20 +45,24 @@ import lombok.Setter;
 @Getter
 public class Valenguard extends Game {
 
+    private static final String TAG = Valenguard.class.getSimpleName();
+
     private static Valenguard valenguard;
-    private AssetManager assetManager;
-    private SpriteBatch spriteBatch;
-    private Client client;
-    private Screen screen;
+    private GameScreen gameScreen;
+    private LoadingScreen loadingScreen;
+    private LoginScreen loginScreen;
     private ScreenType screenType;
-    @Setter
-    private Texture loginBackground;
+    private FileManager fileManager;
+    private ClientConnection clientConnection;
     @Setter
     private volatile boolean canUseLoginButton = true;
     @Setter
     private volatile boolean connectedToServer = false;
+    @Setter
+    private PlayerClient playerClient;
 
-    protected Valenguard() {}
+    protected Valenguard() {
+    }
 
     public static Valenguard getInstance() {
         if (valenguard == null) valenguard = new Valenguard();
@@ -62,35 +71,64 @@ public class Valenguard extends Game {
 
     @Override
     public void create() {
-        System.out.println(ConsoleLogger.INFO + "Starting game...");
-        assetManager = new AssetManager();
-        spriteBatch = new SpriteBatch();
-        client = new Client();
-        setScreen(ScreenType.LOADING.getScreen());
+        Gdx.app.debug(TAG, "Starting game...");
+
+        // startup needed classes
+        fileManager = new FileManager();
+        clientConnection = new ClientConnection();
+
+        // load screens
+        gameScreen = new GameScreen();
+        loadingScreen = new LoadingScreen();
+        loginScreen = new LoginScreen();
+
+        // set the first screen
+        screenType = ScreenType.LOADING;
+        setScreen(loadingScreen);
     }
 
     /**
      * Displays the screen that will be shown to the player.
+     *
      * @param screenType The type of screen we want to display.
      */
     public void setScreen(ScreenType screenType) {
-        // Set reference for later
-        screen = screenType.getScreen();
-        this.screenType = screenType;
 
-        // Set screen with LibGDX
-        setScreen(screen);
+        // Make sure we aren't setting the screen to the same screen.
+        if (this.screenType == screenType) {
+            Gdx.app.debug(TAG,"Trying to change screens, but we are already on requested screen.");
+            return;
+        }
+
+        // Change screens.
+        switch (screenType) {
+            case LOADING:
+                this.screenType = screenType;
+                setScreen(loadingScreen);
+                break;
+            case LOGIN:
+                this.screenType = screenType;
+                setScreen(loginScreen);
+                break;
+            case GAME:
+                this.screenType = screenType;
+                setScreen(gameScreen);
+                break;
+        }
     }
 
     @Override
     public void dispose() {
-        System.out.println(ConsoleLogger.INFO + "Closing game...");
-        System.out.println(ConsoleLogger.INFO.toString() + "Disposing: Valenguard Game");
+        Gdx.app.debug(TAG, "Closing game...");
+        Gdx.app.debug(TAG, "Disposing: Valenguard Game");
 
-        assetManager.dispose();
-        spriteBatch.dispose();
-        screen.dispose();
-        loginBackground.dispose();
+        // dispose assets
+        fileManager.dispose();
+
+        // dispose screens
+        gameScreen.dispose();
+        loginScreen.dispose();
+        loadingScreen.dispose();
     }
 
     /**
@@ -98,15 +136,18 @@ public class Valenguard extends Game {
      */
     public void initializeNetwork() {
         canUseLoginButton = false;
-        client.openConnection(
+        clientConnection.openConnection(
                 ServerConstants.SERVER_ADDRESS,
                 (short) ServerConstants.SERVER_PORT,
                 new Consumer<ClientEventBus>() {
                     @Override
                     public void accept(ClientEventBus clientEventBus) {
-                        clientEventBus.registerListener(new Ponger());
                         clientEventBus.registerListener(new MoveReply());
-                        clientEventBus.registerListener(new MoveRequest());
+                        clientEventBus.registerListener(new EntityMoveUpdate());
+                        clientEventBus.registerListener(new InitializePlayerClient());
+                        clientEventBus.registerListener(new EntityJoinedMap());
+                        clientEventBus.registerListener(new EntityExitMap());
+                        clientEventBus.registerListener(new PlayerMapChange());
                     }
                 });
     }

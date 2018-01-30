@@ -20,13 +20,17 @@ package com.valenguard.client.assets;
  * permission of the owner.
  *******************************************************/
 
-public class Graphics {
+public enum GameUI {
 
-    // BACKGROUNDS
-    public final String LOGIN_BACKGROUND = "background/background.jpg";
+    UI_SKIN("uiskin.json");
 
-    // ENTITIES
-    public final String TEMP_PLAYER_IMG = "player/player.png";
+    private String filePath;
 
+    GameUI(String filePath) {
+        this.filePath = filePath;
+    }
 
+    public String getFilePath() {
+        return "skin/" + filePath;
+    }
 }

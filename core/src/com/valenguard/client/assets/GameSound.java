@@ -1,4 +1,4 @@
-package com.valenguard.client;
+package com.valenguard.client.assets;
 
 /********************************************************
  * Valenguard MMO Client and Valenguard MMO Server Info
@@ -7,7 +7,7 @@ package com.valenguard.client;
  * Created by Robert A Brown & Joseph Rugh
  *
  * Project Title: valenguard-client
- * Original File Date: 1/8/2018 @ 3:54 AM
+ * Original File Date: 1/18/2018 @ 7:06 AM
  * ______________________________________________________
  *
  * Copyright © 2017 Valenguard.com. All Rights Reserved.
@@ -20,7 +20,17 @@ package com.valenguard.client;
  * permission of the owner.
  *******************************************************/
 
-public class ServerConstants {
-    public static final String SERVER_ADDRESS = "localhost";
-    public static final int SERVER_PORT = 1337;
+public enum GameSound {
+
+    EAT("17661_SFX_HumanEatingPotatoChips1.wav");
+
+    private String filePath;
+
+    GameSound(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public String getFilePath() {
+        return "sounds/" + filePath;
+    }
 }

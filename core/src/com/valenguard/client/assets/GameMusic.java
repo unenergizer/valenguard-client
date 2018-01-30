@@ -20,6 +20,17 @@ package com.valenguard.client.assets;
  * permission of the owner.
  *******************************************************/
 
-public class UserInterface {
-    public final String UI_SKIN = "skin/uiskin.json";
+public enum GameMusic {
+
+    LOGIN_SCREEN_THEME("10112013.ogg");
+
+    private String filePath;
+
+    GameMusic(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public String getFilePath() {
+        return "music/" + filePath;
+    }
 }

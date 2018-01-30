@@ -1,13 +1,16 @@
 package com.valenguard.client.util;
 
 import com.badlogic.gdx.InputProcessor;
+import com.valenguard.client.Valenguard;
 import com.valenguard.client.constants.Direction;
-import com.valenguard.client.entities.Entity;
+import com.valenguard.client.entities.PlayerClient;
+import com.valenguard.client.network.ServerHandler;
+import com.valenguard.client.network.listeners.client.outgoing.MoveRequest;
 
 import lombok.AllArgsConstructor;
 
 /********************************************************
- * Valenguard MMO Client and Valenguard MMO Server Info
+ * Valenguard MMO ClientConnection and Valenguard MMO Server Info
  *
  * Owned by Robert A Brown & Joseph Rugh
  * Created by Robert A Brown & Joseph Rugh
@@ -29,7 +32,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class Controller implements InputProcessor {
 
-    private Entity player;
+    private PlayerClient playerClient;
 
     public boolean keyDown(int keycode) {
       //  System.out.println("keyDOWN: " + keycode);
@@ -45,16 +48,16 @@ public class Controller implements InputProcessor {
 
         switch (character) {
             case 'w':
-                player.move(Direction.UP);
+                new MoveRequest(Direction.UP).sendPacket();
                 break;
             case 's':
-                player.move(Direction.DOWN);
+                new MoveRequest(Direction.DOWN).sendPacket();
                 break;
             case 'a':
-                player.move(Direction.LEFT);
+                new MoveRequest(Direction.LEFT).sendPacket();
                 break;
             case 'd':
-                player.move(Direction.RIGHT);
+                new MoveRequest(Direction.RIGHT).sendPacket();
                 break;
         }
 

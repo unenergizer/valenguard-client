@@ -20,7 +20,20 @@ package com.valenguard.client.assets;
  * permission of the owner.
  *******************************************************/
 
-public class Maps {
+public enum GameTexture {
 
-    public final String TEST_MAP = "maps/maintown.tmx";
+    LOGO_BIG("logo_big.png"),
+    LOGIN_BACKGROUND("background/background.jpg"),
+    TEMP_PLAYER_IMG("player/player.png"),
+    TEMP_OTHER_PLAYER_IMG("player/smile.png");
+
+    private String filePath;
+
+    GameTexture(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
 }
