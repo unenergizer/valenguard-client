@@ -250,6 +250,8 @@
   <object id="3" x="400" y="784" width="48" height="16">
    <properties>
     <property name="map" value="south"/>
+    <property name="x" value="7878"/>
+    <property name="y" value="9999"/>
    </properties>
   </object>
   <object id="5" x="240" y="0" width="32" height="16">

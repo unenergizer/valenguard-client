@@ -6,16 +6,22 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.valenguard.client.Valenguard;
 import com.valenguard.client.assets.FileManager;
 import com.valenguard.client.assets.GameMap;
 import com.valenguard.client.assets.GameTexture;
+import com.valenguard.client.assets.GameUI;
 import com.valenguard.client.constants.ClientConstants;
 import com.valenguard.client.entities.Entity;
 import com.valenguard.client.util.AttachableCamera;
 import com.valenguard.client.util.Controller;
 import com.valenguard.client.util.GraphicsUtils;
+import com.valenguard.client.util.LatencyUtil;
 import com.valenguard.client.util.Timer;
 
 import java.util.Queue;
@@ -62,22 +68,24 @@ public class GameScreen implements Screen {
 
     private FileManager fileManager;
     private SpriteBatch spriteBatch;
+    @Getter
+    private LatencyUtil latencyUtil;
+
+    // TODO: MOVE THIS LATER
     private Texture playerTexture;
     @Getter
     private AttachableCamera camera;
     private ScreenViewport screenViewport;
     private TiledMap tiledMap;
     private OrthogonalTiledMapRenderer mapRenderer;
-
+    private Skin skin;
+    private Stage stage;
 
     //https://stackoverflow.com/questions/28113700/libgdx-render-and-update-calling-speed
 
-    static final double DT = 1/60.0;
-    static final int MAX_UPDATES_PER_FRAME = 3; //for preventing spiral of death
+    private static final double DT = 1/60.0;
+    private long ticksPassed = 0;
     private long currentTimeMillis;
-
-
-
 
 
     @Override
@@ -89,6 +97,7 @@ public class GameScreen implements Screen {
 
         spriteBatch = new SpriteBatch();
         fileManager = Valenguard.getInstance().getFileManager();
+        latencyUtil = new LatencyUtil();
 
         // Setup player
         playerTexture = fileManager.getTexture(GameTexture.TEMP_PLAYER_IMG);
@@ -98,6 +107,10 @@ public class GameScreen implements Screen {
         screenViewport = new ScreenViewport();
         camera.attachEntity(Valenguard.getInstance().getPlayerClient());
 
+        stage = new Stage(screenViewport);
+        skin = new Skin(Gdx.files.internal(GameUI.UI_SKIN.getFilePath()));
+        buildUI();
+
         // Setup Map
         setTiledMap(GameMap.MAIN_TOWN);
 
@@ -106,7 +119,44 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(inputProcessor);
     }
 
-    int iiii = 0;
+    private void buildUI() {
+        if (stage != null) stage.clear();
+
+        boolean debugStage = false;
+
+        Table wrapperTable = new Table();
+        wrapperTable.setFillParent(true);
+        wrapperTable.setDebug(debugStage);
+        stage.addActor(wrapperTable);
+
+        Table infoTable = new Table();
+        infoTable.setFillParent(false);
+        infoTable.setDebug(debugStage);
+        stage.addActor(infoTable);
+
+        // create version widgets
+        Label delta = new Label("DeltaTime: " + Math.round(Gdx.graphics.getDeltaTime() * 100000.0) / 100000.0, skin);
+        Label fps = new Label("FPS: " + Gdx.graphics.getFramesPerSecond(), skin);
+        Label ms = new Label("MS: " + latencyUtil.getPing(), skin);
+        Label uuid = new Label("UUID: " + Valenguard.getInstance().getPlayerClient().getEntityId(), skin);
+        Label x = new Label("X: " + Valenguard.getInstance().getPlayerClient().getX(), skin);
+        Label y = new Label("Y: " + Valenguard.getInstance().getPlayerClient().getY(), skin);
+
+        wrapperTable.add(infoTable).expand().left().top().pad(10);
+
+        // show client version in lower left hand corner
+        infoTable.add(delta);
+        infoTable.row();
+        infoTable.add(fps).left();
+        infoTable.row();
+        infoTable.add(ms).left();
+        infoTable.row();
+        infoTable.add(uuid).left();
+        infoTable.row();
+        infoTable.add(x).left();
+        infoTable.row();
+        infoTable.add(y).left();
+    }
 
     @Override
     public void render(float delta) {
@@ -145,6 +195,10 @@ public class GameScreen implements Screen {
         Valenguard.getInstance().getPlayerClient().draw(spriteBatch, playerTexture);
 
         spriteBatch.end();
+
+        buildUI();
+        stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+        stage.draw();
     }
 
     private void update() {
@@ -171,12 +225,20 @@ public class GameScreen implements Screen {
                 }
             }
         }
+
+        // Send a ping packet once per second
+        if (ticksPassed % Timer.SECOND == 0) {
+            latencyUtil.sendPingPacket();
+        }
+
+        ticksPassed++;
     }
 
     @Override
     public void resize(int width, int height) {
         screenViewport.update(width, height, true);
         camera.setToOrtho(false, width, height);
+        stage.getViewport().update(width, height, true);
     }
 
     @Override
@@ -201,6 +263,8 @@ public class GameScreen implements Screen {
         // Dispose of system resources
         if (mapRenderer != null) mapRenderer.dispose();
         if (spriteBatch != null) spriteBatch.dispose();
+        if (stage != null) stage.dispose();
+        if (skin != null) skin.dispose();
     }
 
     /**

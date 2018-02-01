@@ -2,11 +2,13 @@ package com.valenguard.client.network.listeners.client.incoming;
 
 import com.badlogic.gdx.Gdx;
 import com.valenguard.client.Valenguard;
+import com.valenguard.client.constants.ClientConstants;
 import com.valenguard.client.entities.PlayerClient;
 import com.valenguard.client.network.ServerHandler;
 import com.valenguard.client.network.shared.Listener;
 import com.valenguard.client.network.shared.Opcode;
 import com.valenguard.client.network.shared.Opcodes;
+import com.valenguard.client.settings.UserSettings;
 import com.valenguard.client.util.Consumer;
 import com.valenguard.client.util.Timer;
 
@@ -37,6 +39,8 @@ public class MoveReply implements Listener {
 
     private static final String TAG = MoveReply.class.getSimpleName();
 
+    private float deltaTimeElapsed = 0.0f;
+
     @Opcode(getOpcode = Opcodes.MOVE_REPLY)
     public void onMoveReply(ServerHandler serverHandler) throws IOException {
 
@@ -49,6 +53,8 @@ public class MoveReply implements Listener {
         PlayerClient playerClient = Valenguard.getInstance().getPlayerClient();
         final int tileToX = inputStream.readInt();
         final int tileToY = inputStream.readInt();
+        final int tileDifx = tileToX - (int)(playerClient.getX());
+        final int tileDify = tileToY - (int)(playerClient.getY());
 
         /**
          * The following commented out code was an attempt at
@@ -56,12 +62,7 @@ public class MoveReply implements Listener {
          * Feel free to mess around with it.
          */
 
-        //int x = tileToX - (int)playerClient.getX();
-        //int y = tileToY - (int)playerClient.getY();
-
-        // The amount the client moves per tick.
-        //final float movementDifX = x*(1 / 60f);
-        //final float movementDifY = y*(1 / 60f);
+        final float TILES_PER_SECOND = 1.0f;
 
         // Update the client with server coordinates.
         Gdx.app.postRunnable(new Runnable() {
@@ -74,19 +75,27 @@ public class MoveReply implements Listener {
 
                 // Run a timer for 1 second and interpolate the player
                 // movement.
-                /*new Timer().runForPeriod(new Consumer<Integer>() {
+                new Timer().runForPeriod(new Consumer<Integer>() {
                     @Override
                     public void accept(Integer tick) {
+
+                        float speed = deltaTimeElapsed * (TILES_PER_SECOND * (float)ClientConstants.TILE_SIZE);
+
+                        System.out.println("speed: " + speed);
+
                         PlayerClient playerClient = Valenguard.getInstance().getPlayerClient();
-                        playerClient.setX(playerClient.getX() + movementDifX);
-                        playerClient.setY(playerClient.getY() + movementDifY);
+                        playerClient.setX((float)Math.floor(playerClient.getX()) + speed*tileDifx/16.0f);
+                        playerClient.setY((float)Math.floor(playerClient.getY()) + speed*tileDify/16.0f);
+
                         // Clamp the player onto the new tile.
                         if (tick == 59) {
                             playerClient.setX(tileToX);
                             playerClient.setY(tileToY);
+                            deltaTimeElapsed = 0.0f;
                         }
+                        deltaTimeElapsed += Gdx.graphics.getDeltaTime();
                     }
-                }, Timer.SECOND).start();*/
+                }, Timer.SECOND).start();
             }
         });
     }

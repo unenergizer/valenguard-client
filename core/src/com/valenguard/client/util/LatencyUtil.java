@@ -1,13 +1,17 @@
-package com.valenguard.client.constants;
+package com.valenguard.client.util;
+
+import com.valenguard.client.network.listeners.client.outgoing.PingPacket;
+
+import lombok.Getter;
 
 /********************************************************
- * Valenguard MMO ClientConnection and Valenguard MMO Server Info
+ * Valenguard MMO Client and Valenguard MMO Server Info
  *
  * Owned by Robert A Brown & Joseph Rugh
  * Created by Robert A Brown & Joseph Rugh
  *
  * Project Title: valenguard-client
- * Original File Date: 1/8/2018 @ 3:54 AM
+ * Original File Date: 2/1/2018 @ 1:23 PM
  * ______________________________________________________
  *
  * Copyright © 2017 Valenguard.com. All Rights Reserved.
@@ -20,7 +24,19 @@ package com.valenguard.client.constants;
  * permission of the owner.
  *******************************************************/
 
-public class ServerConstants {
-    public static final String SERVER_ADDRESS = "142.44.143.198";
-    public static final int SERVER_PORT = 1337;
+public class LatencyUtil {
+
+    private long millisecondsSentTime;
+    private volatile boolean running = false;
+    @Getter
+    private long ping;
+
+    public void handleLatency(long millisecondsTimeOfArr) {
+        ping = millisecondsTimeOfArr - millisecondsSentTime;
+    }
+
+    public void sendPingPacket() {
+        millisecondsSentTime = System.currentTimeMillis();
+        new PingPacket().sendPacket();
+    }
 }

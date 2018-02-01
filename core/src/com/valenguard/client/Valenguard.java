@@ -12,12 +12,14 @@ import com.valenguard.client.network.listeners.client.incoming.EntityJoinedMap;
 import com.valenguard.client.network.listeners.client.incoming.EntityMoveUpdate;
 import com.valenguard.client.network.listeners.client.incoming.InitializePlayerClient;
 import com.valenguard.client.network.listeners.client.incoming.MoveReply;
+import com.valenguard.client.network.listeners.client.incoming.PingIn;
 import com.valenguard.client.network.listeners.client.incoming.PlayerMapChange;
 import com.valenguard.client.screens.GameScreen;
 import com.valenguard.client.screens.LoadingScreen;
 import com.valenguard.client.screens.LoginScreen;
 import com.valenguard.client.screens.ScreenType;
 import com.valenguard.client.util.Consumer;
+import com.valenguard.client.util.LatencyUtil;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -54,6 +56,7 @@ public class Valenguard extends Game {
     private ScreenType screenType;
     private FileManager fileManager;
     private ClientConnection clientConnection;
+
     @Setter
     private volatile boolean canUseLoginButton = true;
     @Setter
@@ -148,6 +151,7 @@ public class Valenguard extends Game {
                         clientEventBus.registerListener(new EntityJoinedMap());
                         clientEventBus.registerListener(new EntityExitMap());
                         clientEventBus.registerListener(new PlayerMapChange());
+                        clientEventBus.registerListener(new PingIn());
                     }
                 });
     }
