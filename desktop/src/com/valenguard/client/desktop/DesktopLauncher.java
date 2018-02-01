@@ -33,9 +33,11 @@ public class DesktopLauncher {
 		config.title = "Valenguard - A Retro MMO";
 		config.width = ClientConstants.SCREEN_WIDTH;
 		config.height = ClientConstants.SCREEN_HEIGHT;
+		
 		config.addIcon("icon-128.png", Files.FileType.Internal);
 		config.addIcon("icon-32.png", Files.FileType.Internal);
 		config.addIcon("icon-16.png", Files.FileType.Internal);
+
 		Application application = new LwjglApplication(Valenguard.getInstance(), config);
 		application.setLogLevel(Application.LOG_DEBUG);
 	}
