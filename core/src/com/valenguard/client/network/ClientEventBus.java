@@ -60,6 +60,7 @@ public class ClientEventBus {
     }
 
     public void publish(byte opcode, ServerHandler serverHandler) {
+        System.out.println("PUBLISHING OPCODE: " + opcode);
         CallbackData callbackData = listeners.get(opcode);
         if (callbackData == null) {
             Gdx.app.debug(TAG, "Callback data was null for " + opcode);

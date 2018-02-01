@@ -1,5 +1,7 @@
 package com.valenguard.client.assets;
 
+import com.badlogic.gdx.Game;
+
 /********************************************************
  * Valenguard MMO Client and Valenguard MMO Server Info
  *
@@ -22,7 +24,9 @@ package com.valenguard.client.assets;
 
 public enum GameMap {
 
-    TEST_MAP("maintown.tmx");
+    MAIN_TOWN("maintown.tmx"),
+    SOUTH("south.tmx"),
+    NORTH("north.tmx");
 
     private String filePath;
 
@@ -32,5 +36,18 @@ public enum GameMap {
 
     public String getFilePath() {
         return "maps/" + filePath;
+    }
+
+    /**
+     * Returns the map associated with the map name.
+     *
+     * @param mapName The map name. Make sure to include .tmx in the map name
+     * @return The map
+     */
+    public static GameMap getMapByName(String mapName) {
+        for (GameMap gameMap : GameMap.values()) {
+            if (mapName.equals(gameMap.filePath)) return gameMap;
+        }
+        throw new RuntimeException("Failed to get filepath for map by name: " + mapName);
     }
 }

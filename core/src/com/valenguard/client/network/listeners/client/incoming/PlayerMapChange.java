@@ -2,11 +2,14 @@ package com.valenguard.client.network.listeners.client.incoming;
 
 import com.badlogic.gdx.Gdx;
 import com.valenguard.client.Valenguard;
+import com.valenguard.client.assets.GameMap;
 import com.valenguard.client.entities.Entity;
+import com.valenguard.client.entities.PlayerClient;
 import com.valenguard.client.network.ServerHandler;
 import com.valenguard.client.network.shared.Listener;
 import com.valenguard.client.network.shared.Opcode;
 import com.valenguard.client.network.shared.Opcodes;
+import com.valenguard.client.screens.GameScreen;
 
 import java.io.IOException;
 
@@ -37,16 +40,28 @@ public class PlayerMapChange implements Listener {
     @Opcode(getOpcode = Opcodes.PLAYER_MAP_CHANGE)
     public void onPlayerMapChange(ServerHandler serverHandler) {
 
+        final String mapName = serverHandler.readString();
+        final int x = serverHandler.readInt();
+        final int y = serverHandler.readInt();
 
-            String entityId = serverHandler.readString();
-            int x = serverHandler.readInt();
-            int y = serverHandler.readInt();
-
+        System.out.println("The player should switch to map: " + mapName);
 
         Gdx.app.postRunnable(new Runnable() {
             @Override
             public void run() {
+                Valenguard valenguard = Valenguard.getInstance();
+                GameScreen gameScreen = valenguard.getGameScreen();
 
+                // Clearing all current entities since they are switching maps
+                gameScreen.getEntityList().clear();
+
+                // Switching the map that is to be rendered
+                gameScreen.setTiledMap(GameMap.getMapByName(mapName));
+
+                // Setting up the player to have a new location on the new map
+                PlayerClient playerClient = valenguard.getPlayerClient();
+                playerClient.setX(x);
+                playerClient.setY(y);
             }
         });
     }

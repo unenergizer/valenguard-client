@@ -17,8 +17,6 @@ import com.valenguard.client.util.AttachableCamera;
 import com.valenguard.client.util.Controller;
 import com.valenguard.client.util.GraphicsUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -78,9 +76,7 @@ public class GameScreen implements Screen {
         camera.attachEntity(Valenguard.getInstance().getPlayerClient());
 
         // Setup Map
-        fileManager.loadTiledMap(GameMap.TEST_MAP);
-        tiledMap = fileManager.getTiledMap(GameMap.TEST_MAP);
-        mapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
+        setTiledMap(GameMap.MAIN_TOWN);
 
         // Setup input controls
         Controller inputProcessor = new Controller(Valenguard.getInstance().getPlayerClient());
@@ -144,5 +140,16 @@ public class GameScreen implements Screen {
         // Dispose of system resources
         if (mapRenderer != null) mapRenderer.dispose();
         if (spriteBatch != null) spriteBatch.dispose();
+    }
+
+    /**
+     * Sets the tiled map to be rendered.
+     *
+     * @param gameMap The tiled map based on name
+     */
+    public void setTiledMap(GameMap gameMap) {
+        fileManager.loadTiledMap(gameMap);
+        tiledMap = fileManager.getTiledMap(gameMap);
+        mapRenderer = new OrthogonalTiledMapRenderer(tiledMap);
     }
 }

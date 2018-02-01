@@ -54,6 +54,7 @@ public class InitializePlayerClient implements Listener {
         // Setup the player client entity
         Valenguard.getInstance().setPlayerClient(new PlayerClient(serverHandler.readInt(), serverHandler.readInt(), serverHandler.readInt()));
 
+
         // Now switch to the game screen!
         client.safeChangeScreen(ScreenType.GAME);
     }
