@@ -16,6 +16,7 @@ import com.valenguard.client.entities.Entity;
 import com.valenguard.client.util.AttachableCamera;
 import com.valenguard.client.util.Controller;
 import com.valenguard.client.util.GraphicsUtils;
+import com.valenguard.client.util.Timer;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -51,6 +52,14 @@ public class GameScreen implements Screen {
     @Setter
     private Queue<Entity> entityList = new ConcurrentLinkedQueue<Entity>();
 
+    /**
+     * Used to perform timing operating in relation to the
+     * render method.
+     */
+    @Getter
+    @Setter
+    private Queue<Timer> timers = new ConcurrentLinkedQueue<Timer>();
+
     private FileManager fileManager;
     private SpriteBatch spriteBatch;
     private Texture playerTexture;
@@ -60,8 +69,22 @@ public class GameScreen implements Screen {
     private TiledMap tiledMap;
     private OrthogonalTiledMapRenderer mapRenderer;
 
+
+    //https://stackoverflow.com/questions/28113700/libgdx-render-and-update-calling-speed
+
+    static final double DT = 1/60.0;
+    static final int MAX_UPDATES_PER_FRAME = 3; //for preventing spiral of death
+    private long currentTimeMillis;
+
+
+
+
+
     @Override
     public void show() {
+
+        currentTimeMillis = System.currentTimeMillis();
+
         Gdx.app.debug(TAG, "Showing the game screen.");
 
         spriteBatch = new SpriteBatch();
@@ -83,9 +106,21 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(inputProcessor);
     }
 
+    int iiii = 0;
+
     @Override
     public void render(float delta) {
         GraphicsUtils.clearScreen();
+
+        long newTimeMillis = System.currentTimeMillis();
+        float frameTimeSeconds = (newTimeMillis - currentTimeMillis) / 1000f;
+        currentTimeMillis = newTimeMillis;
+
+        while (frameTimeSeconds > 0f) {
+            double deltaTimeSeconds = Math.min(frameTimeSeconds, DT);
+            update();
+            frameTimeSeconds -= deltaTimeSeconds;
+        }
 
         // Update camera
         camera.clampCamera(screenViewport, tiledMap);
@@ -110,6 +145,32 @@ public class GameScreen implements Screen {
         Valenguard.getInstance().getPlayerClient().draw(spriteBatch, playerTexture);
 
         spriteBatch.end();
+    }
+
+    private void update() {
+        // Running timers
+        for (Timer timer : timers) {
+
+            // Handling callbacks that happen after a period of time.
+            if (timer.getRunLaterCallback() != null) {
+                // The period for the timer has ended.
+                if (timer.incrementTime()) {
+                    timer.getRunLaterCallback().run();
+                    timers.remove(timer);
+                    timer.setCanceled(true);
+                }
+            }
+
+            // Hanlding callbacks that are called each tick for a period.
+            if (timer.getRunForPeriodCallback() != null) {
+                timer.getRunForPeriodCallback().accept(timer.getMillisecondsPassed());
+                // The period for the timer has ended.
+                if (timer.incrementTime()) {
+                    timers.remove();
+                    timer.setCanceled(true);
+                }
+            }
+        }
     }
 
     @Override

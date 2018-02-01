@@ -7,6 +7,8 @@ import com.valenguard.client.network.ServerHandler;
 import com.valenguard.client.network.shared.Listener;
 import com.valenguard.client.network.shared.Opcode;
 import com.valenguard.client.network.shared.Opcodes;
+import com.valenguard.client.util.Consumer;
+import com.valenguard.client.util.Timer;
 
 /********************************************************
  * Valenguard MMO ClientConnection and Valenguard MMO Server Info

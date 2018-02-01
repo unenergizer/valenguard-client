@@ -10,6 +10,7 @@ import com.valenguard.client.network.shared.Listener;
 import com.valenguard.client.network.shared.Opcode;
 import com.valenguard.client.network.shared.Opcodes;
 import com.valenguard.client.screens.GameScreen;
+import com.valenguard.client.util.Timer;
 
 import java.io.IOException;
 
