@@ -49,7 +49,7 @@ public class AttachableCamera extends OrthographicCamera {
         float cameraMaxX = layer.getWidth() * layer.getTileWidth() - cameraMinX;
         float cameraMaxY = layer.getHeight() * layer.getTileHeight() - cameraMinY;
 
-        position.x = MathUtils.clamp(following.getX() * ClientConstants.TILE_SIZE, cameraMinX, cameraMaxX);
-        position.y = MathUtils.clamp(following.getY() * ClientConstants.TILE_SIZE, cameraMinY, cameraMaxY);
+        position.x = MathUtils.clamp(following.getDrawX(), cameraMinX, cameraMaxX);
+        position.y = MathUtils.clamp(following.getDrawY(), cameraMinY, cameraMaxY);
     }
 }

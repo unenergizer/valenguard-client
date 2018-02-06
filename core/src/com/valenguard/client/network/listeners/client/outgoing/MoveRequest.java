@@ -35,17 +35,12 @@ public class MoveRequest extends ClientOutPacket {
     private Direction direction;
 
     public MoveRequest(Direction direction) {
+        super(Opcodes.MOVE_REQUEST);
         this.direction = direction;
     }
 
     @Override
-    public void sendPacket() {
-        serverHandler.write(Opcodes.MOVE_REQUEST, new Write() {
-            @Override
-            public void accept(ObjectOutputStream outStream) throws IOException {
-                //Gdx.app.debug(TAG, "MoveRequest: " + direction.toString() + " = " + direction.getDirection());
-                outStream.writeByte(direction.getDirection());
-            }
-        });
+    protected void createPacket(ObjectOutputStream write) throws IOException {
+        write.writeByte(direction.getDirection());
     }
 }

@@ -18,6 +18,8 @@ import com.valenguard.client.assets.GameTexture;
 import com.valenguard.client.assets.GameUI;
 import com.valenguard.client.constants.ClientConstants;
 import com.valenguard.client.entities.Entity;
+import com.valenguard.client.entities.PlayerClient;
+import com.valenguard.client.maps.MapData;
 import com.valenguard.client.util.AttachableCamera;
 import com.valenguard.client.util.Controller;
 import com.valenguard.client.util.GraphicsUtils;
@@ -81,17 +83,10 @@ public class GameScreen implements Screen {
     private Skin skin;
     private Stage stage;
 
-    //https://stackoverflow.com/questions/28113700/libgdx-render-and-update-calling-speed
-
-    private static final double DT = 1/60.0;
     private long ticksPassed = 0;
-    private long currentTimeMillis;
-
 
     @Override
     public void show() {
-
-        currentTimeMillis = System.currentTimeMillis();
 
         Gdx.app.debug(TAG, "Showing the game screen.");
 
@@ -101,11 +96,12 @@ public class GameScreen implements Screen {
 
         // Setup player
         playerTexture = fileManager.getTexture(GameTexture.TEMP_PLAYER_IMG);
+        PlayerClient playerClient = Valenguard.getInstance().getPlayerClient();
 
         // Setup camera
         camera = new AttachableCamera(ClientConstants.SCREEN_WIDTH, ClientConstants.SCREEN_HEIGHT, ClientConstants.ZOOM);
         screenViewport = new ScreenViewport();
-        camera.attachEntity(Valenguard.getInstance().getPlayerClient());
+        camera.attachEntity(playerClient);
 
         stage = new Stage(screenViewport);
         skin = new Skin(Gdx.files.internal(GameUI.UI_SKIN.getFilePath()));
@@ -113,9 +109,10 @@ public class GameScreen implements Screen {
 
         // Setup Map
         setTiledMap(GameMap.MAIN_TOWN);
+        playerClient.setCurrentMap(Valenguard.getInstance().getMapManager().getMapData(GameMap.MAIN_TOWN.getMapName()));
 
         // Setup input controls
-        Controller inputProcessor = new Controller(Valenguard.getInstance().getPlayerClient());
+        Controller inputProcessor = new Controller(playerClient);
         Gdx.input.setInputProcessor(inputProcessor);
     }
 
@@ -139,8 +136,10 @@ public class GameScreen implements Screen {
         Label fps = new Label("FPS: " + Gdx.graphics.getFramesPerSecond(), skin);
         Label ms = new Label("MS: " + latencyUtil.getPing(), skin);
         Label uuid = new Label("UUID: " + Valenguard.getInstance().getPlayerClient().getEntityId(), skin);
-        Label x = new Label("X: " + Valenguard.getInstance().getPlayerClient().getX(), skin);
-        Label y = new Label("Y: " + Valenguard.getInstance().getPlayerClient().getY(), skin);
+        Label tileX = new Label("TileX: " + Valenguard.getInstance().getPlayerClient().getTileX(), skin);
+        Label tileY = new Label("TileY: " + Valenguard.getInstance().getPlayerClient().getTileY(), skin);
+        Label drawX = new Label("DrawX: " + Valenguard.getInstance().getPlayerClient().getDrawX(), skin);
+        Label drawY = new Label("DrawY: " + Valenguard.getInstance().getPlayerClient().getDrawY(), skin);
 
         wrapperTable.add(infoTable).expand().left().top().pad(10);
 
@@ -153,24 +152,20 @@ public class GameScreen implements Screen {
         infoTable.row();
         infoTable.add(uuid).left();
         infoTable.row();
-        infoTable.add(x).left();
+        infoTable.add(tileX).left();
         infoTable.row();
-        infoTable.add(y).left();
+        infoTable.add(tileY).left();
+        infoTable.row();
+        infoTable.add(drawX).left();
+        infoTable.row();
+        infoTable.add(drawY).left();
     }
 
     @Override
     public void render(float delta) {
         GraphicsUtils.clearScreen();
 
-        long newTimeMillis = System.currentTimeMillis();
-        float frameTimeSeconds = (newTimeMillis - currentTimeMillis) / 1000f;
-        currentTimeMillis = newTimeMillis;
-
-        while (frameTimeSeconds > 0f) {
-            double deltaTimeSeconds = Math.min(frameTimeSeconds, DT);
-            update();
-            frameTimeSeconds -= deltaTimeSeconds;
-        }
+        update();
 
         // Update camera
         camera.clampCamera(screenViewport, tiledMap);
@@ -202,6 +197,7 @@ public class GameScreen implements Screen {
     }
 
     private void update() {
+
         // Running timers
         for (Timer timer : timers) {
 

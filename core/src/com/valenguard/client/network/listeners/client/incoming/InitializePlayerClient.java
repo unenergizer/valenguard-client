@@ -3,6 +3,7 @@ package com.valenguard.client.network.listeners.client.incoming;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.valenguard.client.Valenguard;
+import com.valenguard.client.constants.ClientConstants;
 import com.valenguard.client.entities.PlayerClient;
 import com.valenguard.client.network.ClientConnection;
 import com.valenguard.client.network.ServerHandler;
@@ -51,9 +52,12 @@ public class InitializePlayerClient implements Listener {
         // Send the login window a connection message
         client.safeInfoMessage("Connected!", Color.GREEN);
 
-        // Setup the player client entity
-        Valenguard.getInstance().setPlayerClient(new PlayerClient(serverHandler.readInt(), serverHandler.readInt(), serverHandler.readInt()));
+        int entityID = serverHandler.readInt();
+        int x = serverHandler.readInt();
+        int y = serverHandler.readInt();
 
+        // Setup the player client entity
+        Valenguard.getInstance().setPlayerClient(new PlayerClient(entityID, x, y, .01));
 
         // Now switch to the game screen!
         client.safeChangeScreen(ScreenType.GAME);

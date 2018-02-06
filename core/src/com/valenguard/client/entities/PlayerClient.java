@@ -1,6 +1,10 @@
 package com.valenguard.client.entities;
 
 import com.badlogic.gdx.Gdx;
+import com.valenguard.client.maps.MapData;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /********************************************************
  * Valenguard MMO Client and Valenguard MMO Server Info
@@ -22,14 +26,25 @@ import com.badlogic.gdx.Gdx;
  * permission of the owner.
  *******************************************************/
 
+@Getter
+@Setter
 public class PlayerClient extends Entity {
 
     private static final String TAG = PlayerClient.class.getSimpleName();
 
-    public PlayerClient(int entityId, float x, float y) {
-        super(entityId, x, y);
+    /**
+     * The current TiledMap the player is on.
+     */
+    private MapData currentMap;
 
-        Gdx.app.debug(TAG, "EntityID: " + entityId + ", X: " + x + ", Y: " + y);
+    /**
+     * Defines whither or not the player is traversing across the map.
+     */
+    private boolean moving = false;
+
+    public PlayerClient(int entityId, int tileX, int tileY, double speed) {
+        super(entityId, tileX, tileY, speed);
+        Gdx.app.debug(TAG, "EntityID: " + entityId + ", X: " + tileX + ", Y: " + tileY);
     }
 
 }

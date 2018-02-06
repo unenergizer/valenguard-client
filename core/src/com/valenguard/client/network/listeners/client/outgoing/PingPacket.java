@@ -28,10 +28,12 @@ import java.io.ObjectOutputStream;
 
 public class PingPacket extends ClientOutPacket {
 
+    public PingPacket() {
+        super(Opcodes.PING);
+    }
+
     @Override
-    public void sendPacket() {
-        serverHandler.write(Opcodes.PING, new Write() {
-            @Override public void accept(ObjectOutputStream outStream) throws IOException {}
-        });
+    protected void createPacket(ObjectOutputStream write) throws IOException {
+        //Nothing to write. Sending opcode only.
     }
 }

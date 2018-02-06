@@ -61,8 +61,11 @@ public class PlayerMapChange implements Listener {
 
                 // Setting up the player to have a new location on the new map
                 PlayerClient playerClient = valenguard.getPlayerClient();
-                playerClient.setX(x);
-                playerClient.setY(y);
+                playerClient.setTileX(x);
+                playerClient.setTileY(y);
+                playerClient.setDrawX(x);
+                playerClient.setDrawY(y);
+                playerClient.setCurrentMap(valenguard.getMapManager().getMapData(mapName));
             }
         });
     }

@@ -21,6 +21,7 @@ package com.valenguard.client.constants;
  *******************************************************/
 
 public class ServerConstants {
-    public static final String SERVER_ADDRESS = "142.44.143.198";
+    //public static final String SERVER_ADDRESS = "142.44.143.198";
+    public static final String SERVER_ADDRESS = "localhost";
     public static final int SERVER_PORT = 1337;
 }

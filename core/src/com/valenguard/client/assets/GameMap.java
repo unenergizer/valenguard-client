@@ -24,9 +24,9 @@ import com.badlogic.gdx.Game;
 
 public enum GameMap {
 
-    MAIN_TOWN("maintown.tmx"),
-    SOUTH("south.tmx"),
-    NORTH("north.tmx");
+    MAIN_TOWN("maintown"),
+    SOUTH("south"),
+    NORTH("north");
 
     private String filePath;
 
@@ -34,8 +34,12 @@ public enum GameMap {
         this.filePath = filePath;
     }
 
+    public String getMapName() {
+        return filePath + ".tmx";
+    }
+
     public String getFilePath() {
-        return "maps/" + filePath;
+        return "maps/" + filePath + ".tmx";
     }
 
     /**

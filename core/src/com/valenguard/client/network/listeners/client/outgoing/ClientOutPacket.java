@@ -2,6 +2,10 @@ package com.valenguard.client.network.listeners.client.outgoing;
 
 import com.valenguard.client.Valenguard;
 import com.valenguard.client.network.ServerHandler;
+import com.valenguard.client.network.shared.Write;
+
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 /********************************************************
  * Valenguard MMO Client and Valenguard MMO Server Info
@@ -26,12 +30,33 @@ import com.valenguard.client.network.ServerHandler;
 public abstract class ClientOutPacket {
 
     /**
-     * Used to eaisly send out packets to the server.
+     * Opcode to send with the out-going packet.
+     */
+    protected byte opcode;
+
+    /**
+     * Used to easily send out packets to the server.
      */
     protected ServerHandler serverHandler = Valenguard.getInstance().getClientConnection().getServerHandler();
 
+    public ClientOutPacket(byte opcode) {
+        this.opcode = opcode;
+    }
+
     /**
-     * Sends the packet.
+     * Sends the packet to the player.
      */
-    public abstract void sendPacket();
+    public void sendPacket() {
+        serverHandler.write(opcode, new Write() {
+            @Override
+            public void accept(ObjectOutputStream write) throws IOException {
+                ClientOutPacket.this.createPacket(write);
+            }
+        });
+    }
+
+    /**
+     * Creates the packet.
+     */
+    protected abstract void createPacket(ObjectOutputStream write) throws IOException;
 }

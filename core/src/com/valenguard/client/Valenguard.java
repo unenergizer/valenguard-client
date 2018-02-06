@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.valenguard.client.assets.FileManager;
 import com.valenguard.client.constants.ServerConstants;
 import com.valenguard.client.entities.PlayerClient;
+import com.valenguard.client.maps.MapManager;
 import com.valenguard.client.network.ClientConnection;
 import com.valenguard.client.network.ClientEventBus;
 import com.valenguard.client.network.listeners.client.incoming.EntityExitMap;
@@ -56,6 +57,7 @@ public class Valenguard extends Game {
     private ScreenType screenType;
     private FileManager fileManager;
     private ClientConnection clientConnection;
+    private MapManager mapManager;
 
     @Setter
     private volatile boolean canUseLoginButton = true;
@@ -79,6 +81,7 @@ public class Valenguard extends Game {
         // startup needed classes
         fileManager = new FileManager();
         clientConnection = new ClientConnection();
+        mapManager = new MapManager();
 
         // load screens
         gameScreen = new GameScreen();

@@ -37,7 +37,6 @@ public class EntityMoveUpdate implements Listener {
 
     @Opcode(getOpcode = Opcodes.ENTITY_MOVE_UPDATE)
     public void onEntityMoveUpdate(ServerHandler serverHandler) {
-        System.out.println("ENTITY MOVE UPDATE CALLED");
         final int entityID = serverHandler.readInt();
         final int x = serverHandler.readInt();
         final int y = serverHandler.readInt();
@@ -45,13 +44,11 @@ public class EntityMoveUpdate implements Listener {
         Gdx.app.postRunnable(new Runnable() {
             @Override
             public void run() {
-                Gdx.app.debug(TAG, "EntityMoveUpdate: " + entityID + ". X: " + x + ", Y: " + y);
-
+                //Gdx.app.debug(TAG, "EntityMoveUpdate: " + entityID + ". X: " + x + ", Y: " + y);
                 for (Entity entity : Valenguard.getInstance().getGameScreen().getEntityList()) {
                     if (entity.getEntityId() == entityID) {
-                        Gdx.app.debug(TAG, "Moving entity: " + entityID + " X: " + x + ", Y: " + y);
-                        entity.setX(x);
-                        entity.setY(y);
+                        //entity.setX(x);
+                        //entity.setY(y);
                     }
                 }
             }

@@ -2,6 +2,7 @@ package com.valenguard.client.network.listeners.client.incoming;
 
 import com.badlogic.gdx.Gdx;
 import com.valenguard.client.Valenguard;
+import com.valenguard.client.constants.ClientConstants;
 import com.valenguard.client.entities.Entity;
 import com.valenguard.client.network.ServerHandler;
 import com.valenguard.client.network.shared.Listener;
@@ -50,7 +51,7 @@ public class EntityJoinedMap implements Listener {
                 }
 
                 Gdx.app.debug(TAG, "ADDED ENTITY: " + entityId + ". X: " + x + ", Y: " + y);
-                Valenguard.getInstance().getGameScreen().getEntityList().add(new Entity(entityId, x, y));
+                Valenguard.getInstance().getGameScreen().getEntityList().add(new Entity(entityId, x, y, 1));
             }
         });
     }
