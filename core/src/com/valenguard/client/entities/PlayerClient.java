@@ -2,6 +2,8 @@ package com.valenguard.client.entities;
 
 import com.badlogic.gdx.Gdx;
 import com.valenguard.client.maps.MapData;
+import com.valenguard.client.util.Consumer;
+import com.valenguard.client.util.Timer;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -42,9 +44,24 @@ public class PlayerClient extends Entity {
      */
     private boolean moving = false;
 
+    private Timer preMovementTimer;
+
+    private float preMovement;
+
     public PlayerClient(int entityId, int tileX, int tileY, double speed) {
         super(entityId, tileX, tileY, speed);
         Gdx.app.debug(TAG, "EntityID: " + entityId + ", X: " + tileX + ", Y: " + tileY);
     }
 
+    public void startPreMovement(final int tileToX, final int tileToY) {
+        if (preMovementTimer != null) preMovementTimer.cancel();
+        preMovementTimer = new Timer().runForPeriod(new Consumer<Integer>() {
+            @Override
+            public void accept(Integer data) {
+                preMovement = getMovementDeltaTimeElapsed(); // Getting the amount they have currently moved by up to this point
+                movementPerTick(tileToX - getTileX(), tileToY - getTileY(), 0.0f);
+                preMovement = getMovementDeltaTimeElapsed();
+            }
+        }, Timer.MINUTE).start();
+    }
 }

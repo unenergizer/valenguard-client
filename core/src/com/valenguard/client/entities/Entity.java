@@ -1,9 +1,12 @@
 package com.valenguard.client.entities;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.sun.org.apache.xpath.internal.SourceTree;
+import com.valenguard.client.Valenguard;
 import com.valenguard.client.constants.ClientConstants;
+import com.valenguard.client.util.Consumer;
+import com.valenguard.client.util.Timer;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -56,6 +59,11 @@ public class Entity {
      */
     private float drawX, drawY;
 
+    private Timer movementTimer;
+    private float movementDeltaTimeElapsed = 0.0f;
+
+    private float TILES_PER_SECOND = 1.0f;
+
     public Entity(int entityId, int tileX, int tileY, double speed) {
         this.entityId = entityId;
         this.tileX = tileX;
@@ -69,6 +77,64 @@ public class Entity {
         // set default draw locations
         drawX = tileX * ClientConstants.TILE_SIZE;
         drawY = tileY * ClientConstants.TILE_SIZE;
+    }
+
+    public void move(final int tileToX, final int tileToY, final float distanceMoved) {
+
+        movementDeltaTimeElapsed = 0.0f;
+
+        int tileDifx = tileToX - tileX;
+        int tileDify = tileToY - tileY;
+
+        /**
+         * The following commented out code was an attempt at
+         * interpolation. It only sorta worked but was buggy.
+         * Feel free to mess around with it.
+         */
+
+        final int useableTileDifx = tileDifx;
+        final int useableTileDify = tileDify;
+
+        final Entity thisEntity = this;
+
+        // Update the client with server coordinates.
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+
+                // Run a timer for 1 second and interpolate the player
+                // movement.
+                movementTimer = new Timer().runForPeriod(new Consumer<Integer>() {
+                    @Override
+                    public void accept(Integer tick) {
+
+                        System.out.println("SUBTRACTING OUT: " + (1/60f * distanceMoved));
+                        movementPerTick(useableTileDifx, useableTileDify, 1/60f * distanceMoved);
+
+                        // Clamp the player onto the new tile.
+                        if (tick == 59) {
+                            System.out.println();
+                            setDrawX(tileToX * ClientConstants.TILE_SIZE);
+                            setDrawY(tileToY * ClientConstants.TILE_SIZE);
+                            setTileX(tileToX);
+                            setTileY(tileToY);
+                            movementDeltaTimeElapsed = 0.0f;
+                            if (thisEntity instanceof PlayerClient) {
+                                System.out.println("Settings movement to false.");
+                                ((PlayerClient) thisEntity).setMoving(false);
+                            }
+                        }
+                    }
+                }, Timer.MINUTE).start();
+            }
+        });
+    }
+
+    protected void movementPerTick(final int useableTileDifx, final int useableTileDify, float movementSubtraction) {
+        float movedTilePerTick = movementDeltaTimeElapsed * ClientConstants.TILE_SIZE * TILES_PER_SECOND - movementSubtraction;
+        setDrawX(getTileX() * ClientConstants.TILE_SIZE + movedTilePerTick * useableTileDifx);
+        setDrawY(getTileY() * ClientConstants.TILE_SIZE + movedTilePerTick * useableTileDify);
+        movementDeltaTimeElapsed += Gdx.graphics.getRawDeltaTime();
     }
 
     /**

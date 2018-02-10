@@ -51,6 +51,7 @@ public class Controller implements InputProcessor {
         switch (character) {
             case 'w':
                 if (!map.isTraversable(currentTileX, currentTileY + 1) || playerClient.isMoving()) break;
+                System.out.println("starting pre movement.");
                 new MoveRequest(Direction.UP).sendPacket();
                 break;
             case 's':
