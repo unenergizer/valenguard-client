@@ -29,6 +29,9 @@ public class TmxParser {
      */
     public static MapData loadXMLFile(String directory, String fileName) {
 
+        System.out.println("Directory: " + directory);
+        System.out.println("FileName: " + fileName);
+
         // Lets get the document
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 

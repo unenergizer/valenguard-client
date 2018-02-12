@@ -1,17 +1,20 @@
 package com.valenguard.client.maps;
 
+import com.valenguard.client.constants.ClientConstants;
+
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MapManager {
 
-    private static final String MAP_DIRECTORY = "maps/";
-
+    private final InternalFileManager internalFileManager;
     private Map<String, MapData> tmxMaps = new HashMap<String, MapData>();
 
-    public MapManager() {
+    public MapManager(InternalFileManager internalFileManager) {
+        this.internalFileManager = internalFileManager;
+
+
         loadAllMaps();
     }
 
@@ -23,25 +26,22 @@ public class MapManager {
     private void loadAllMaps() {
 
         // Find all our maps.
-        File dir = new File(MAP_DIRECTORY);
-        File[] files = dir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".tmx");
-            }
-        });
-
-        System.out.println(dir.getAbsolutePath());
+        File[] files = internalFileManager.loadFiles();
 
         // Check to make sure we have some maps
         if (files == null) {
             throw new RuntimeException("No game maps were loaded.");
         }
 
+        // Print out file names for debugging...
+        for (File file : files) {
+            System.out.println(file.getName());
+        }
+
         // Now load all of our maps
         for (File file : files) {
             String mapName = file.getName();
-            tmxMaps.put(mapName, TmxParser.loadXMLFile(MAP_DIRECTORY, mapName));
+            tmxMaps.put(mapName, TmxParser.loadXMLFile(ClientConstants.MAP_DIRECTORY, mapName));
         }
     }
 

@@ -1,10 +1,13 @@
 package com.valenguard.client;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.valenguard.client.assets.FileManager;
 import com.valenguard.client.constants.ServerConstants;
 import com.valenguard.client.entities.PlayerClient;
+import com.valenguard.client.maps.AndroidMapFileHandler;
+import com.valenguard.client.maps.PCMapFileHandler;
 import com.valenguard.client.maps.MapManager;
 import com.valenguard.client.network.ClientConnection;
 import com.valenguard.client.network.ClientEventBus;
@@ -20,7 +23,6 @@ import com.valenguard.client.screens.LoadingScreen;
 import com.valenguard.client.screens.LoginScreen;
 import com.valenguard.client.screens.ScreenType;
 import com.valenguard.client.util.Consumer;
-import com.valenguard.client.util.LatencyUtil;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -81,7 +83,15 @@ public class Valenguard extends Game {
         // startup needed classes
         fileManager = new FileManager();
         clientConnection = new ClientConnection();
-        mapManager = new MapManager();
+
+        // startup map manager with platform specific file handling.
+        if (Gdx.app.getType() == Application.ApplicationType.Android) {
+            // Load Android & iOS file handler
+            mapManager = new MapManager(new AndroidMapFileHandler());
+        } else {
+            // Load PC file handler
+            mapManager = new MapManager(new PCMapFileHandler());
+        }
 
         // load screens
         gameScreen = new GameScreen();
